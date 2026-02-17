@@ -1,0 +1,32 @@
+package com.learn.bookService.controller;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.v3.oas.annotations.Hidden;
+
+@RestController
+public class LogController {
+
+    // creating a logger
+    Logger logger
+        = LoggerFactory.getLogger(LogController.class);
+
+    @Hidden
+    @GetMapping("/internal")
+    @RequestMapping("/log") 
+    public String log()
+    {
+        // Logging various log level messages
+        logger.trace("Log level: TRACE");
+        logger.info("Log level: INFO");
+        logger.debug("Log level: DEBUG");
+        logger.error("Log level: ERROR");
+        logger.warn("Log level: WARN");
+
+        return "Hey! You can check the output in the logs";
+    }
+}

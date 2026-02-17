@@ -1,0 +1,73 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Eclipse / general ###
+bin/
+
+# Logs and runtime data
+/logs/
+*.log
+*.log.*
+*.log.gz
+/data/
+bookdb.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test / reports
+/surefire-reports/
+/jacoco.exec
+
+# Spring Boot devtools
+spring-devtools.properties
+
+# Environment / secrets
+.env
+.env.*
+secrets.properties
+
+# Misc
+*.class
+*.jar
+*.war
+*.ear
+*.keystore
+
+# Ignore the Docker image jar copied by Dockerfile (if present)
+app.jar
+
+# Allow explicitly-checked in files by uncommenting below
+# !/src/main/resources/application.yaml
