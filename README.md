@@ -196,4 +196,4 @@ docker run --rm -p 8081:8081 book-service:local
 - Run `mvn test` before submitting a PR.
 
 ## License
-No license information was provided in the project POM. Add a LICENSE file to this repository to make the licensing explicit.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
