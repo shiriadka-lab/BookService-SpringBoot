@@ -14,8 +14,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  */
 @Configuration
 @EnableJpaRepositories(
-    value = "com.example.demo.persistence.repo"
+    value = "com.learn.bookService.persistence.repo"
 )
-@EntityScan("com.example.demo.persistence.model")
+@EntityScan("com.learn.bookService.persistence.model")
 public class JpaConfig {
 }

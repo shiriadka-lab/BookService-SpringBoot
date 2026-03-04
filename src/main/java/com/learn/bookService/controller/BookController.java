@@ -5,6 +5,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,6 +29,7 @@ import jakarta.validation.Valid;
 // It is equivalent to @Controller + @ResponseBody.
 @RestController     
 @RequestMapping("/api/v1/books")
+@EnableMethodSecurity
 public class BookController {
 	
 	// creating a logger
@@ -67,6 +70,7 @@ public class BookController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     // @Valid: This annotation triggers validation on the Book object.
     public BookDTO create(@Valid @RequestBody BookDTO bookDto) {
     	
@@ -75,6 +79,7 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void delete(@PathVariable Long id) {
     	bookOps.deleteById(id);
     }
@@ -84,6 +89,7 @@ public class BookController {
 		Client must send all fields
 		Missing fields are treated as null / default
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public BookDTO updateBook(@Valid @RequestBody BookDTO bookDto, @PathVariable Long id) {
     	logger.info("update Book with ID " + id);

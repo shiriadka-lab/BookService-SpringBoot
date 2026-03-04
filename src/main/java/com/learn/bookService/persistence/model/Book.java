@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-// NOTE : javax.persistence is deprecated in Boot 3+
+// NOTE: Use jakarta.persistence imports (the older javax.persistence package is deprecated in Spring Boot 3+)
 
 @Entity
 public class Book {
@@ -66,4 +66,3 @@ public class Book {
 				this.getPrice();
 	}
 }
-

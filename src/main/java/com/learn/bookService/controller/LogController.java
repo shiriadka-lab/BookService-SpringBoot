@@ -17,7 +17,7 @@ public class LogController {
 
     @Hidden
     @GetMapping("/internal")
-    @RequestMapping("/log") 
+//    @RequestMapping("/log") 
     public String log()
     {
         // Logging various log level messages
