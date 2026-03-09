@@ -3,7 +3,9 @@ package com.learn.bookService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+//import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 
 // Scan this package for Spring Data JPA repository interfaces
 //@EnableJpaRepositories("com.example.demo.persistence.repo") 
@@ -22,6 +24,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  *  applied to tests or other contexts.
  */
 @SpringBootApplication
+// @EnableEurekaClient is the old annotation that was removed in newer Spring Cloud versions. You don't need it at all!
+// Since Spring Cloud 2022.x and above, services auto-register with Eureka just by having the eureka-client dependency on the classpath. No annotation needed.
+//@EnableEurekaClient // ← Enable Eureka client functionality
+@EnableFeignClients          // ← Enable Feign clients in the specified package
 public class Application {
 
 	public static void main(String[] args) {

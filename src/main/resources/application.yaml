@@ -1,6 +1,6 @@
 spring:
   application:
-    name: BookService Spring Boot Application
+    name: book-service
   
   thymeleaf:
     cache: false
@@ -15,7 +15,7 @@ spring:
 #    password: 
     
   datasource:
-    url: jdbc:postgresql://localhost:5432/SpringBoot
+    url: jdbc:postgresql://localhost:5433/SpringBoot
     username: postgres
     password: jboss
     driver-class-name: org.postgresql.Driver
@@ -25,7 +25,14 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
 
 #  h2:
 #    console:
@@ -36,11 +43,28 @@ spring:
     user:
       name: admin
       password: secret123
+    oauth2:
+      client:
+        registration:
+          pricing-client:
+            client-id: book-service
+            client-secret: book-secret
+            authorization-grant-type: client_credentials
+            scope: internal
+          provider:
+            sas:
+              token-uri: http://auth-server:7001/oauth2/token
 
   kafka:
+    enabled: false
     bootstrap-servers:  # leave empty or comment out
       admin:
       fail-fast: false
+
+pricing:
+  service:
+    url: http://localhost:8082
+
 
 server:
   port: 8081
@@ -48,6 +72,12 @@ server:
 
   error:
     path: /error2
+
+sonar:
+  jdbc:
+    url: jdbc:postgresql://localhost:5432/sonar
+    username: sonar
+    password: sonar
 
 management:
   endpoints:
@@ -68,3 +98,13 @@ logging:
   file:
     path: logs/ 
     name: logs/application.log 
+
+## in production, you would typically use environment variables
+# or a secrets manager to store sensitive information like the JWT secret key. 
+# For example, you could set the JWT secret as an environment variable and reference it here:
+## Azure → Key Vault
+## in docker "docker run -e JWT_SECRET=very-long-random-key my-app"
+## in linux/WSL export JWT_SECRET=very-long-random-key
+## in powershell setx JWT_SECRET "very-long-random-key" and access it as jwt.secret=${JWT_SECRET} 
+jwt:
+  secret: veryverysecuresecretkey1234567890  # set as an environment variable

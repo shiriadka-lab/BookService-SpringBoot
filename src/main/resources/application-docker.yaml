@@ -4,17 +4,42 @@ spring:
       on-profile: docker
 
   kafka:
+    enabled: true
     bootstrap-servers: kafka:9092
     admin:
       fail-fast: false
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # 🔹 Retry / backoff settings
+      retries: 3
+      properties:
+        # Optional: max time for metadata refresh
+        metadata.max.age.ms: 30000
+        retry-backoff-ms: 2000
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1  # required with idempotence
+        spring.json.add.type.headers: false   # don't embed class name in headers
 
     consumer:
       group-id: book-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.example.demo.Events
+        spring.json.trusted.packages: "com.learn.bookService.Events"
         auto.offset.reset: earliest
+        
+eureka:
+  instance:
+    # Use Docker container hostname for inter-container communication
+    prefer-ip-address: true
+    # How often this instance sends heartbeats to Eureka (default 30s)
+    lease-renewal-interval-in-seconds: 10
+    # How long Eureka waits before removing instance without heartbeat (default 90s)
+    lease-expiration-duration-in-seconds: 30
+  client:
+    register-with-eureka: true   # Register this service
+    fetch-registry: true         # Fetch registry (needed to discover other services)
+    service-url:
+      # "eureka-server" matches the Docker Compose service name
+      defaultZone: http://eureka-server:8761/eureka/

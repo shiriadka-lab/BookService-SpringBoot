@@ -17,8 +17,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.learn.bookService.Events.BookEventPublisher;
+import com.learn.bookService.client.PricingClient;
 import com.learn.bookService.dto.BookDTO;
 import com.learn.bookService.exception.BookAlreadyExistsException;
 import com.learn.bookService.metrics.BookMetricsService;
@@ -38,6 +40,9 @@ class BookServiceTest {
     private BookMetricsService metrics;
 
     private BookService service;
+    
+    @MockBean
+    private PricingClient pricingClient;  // Mock it so URL is never needed
 
     @BeforeEach
     void setUp() {

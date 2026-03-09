@@ -8,6 +8,8 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.DeserializationException;
+import org.springframework.util.backoff.ExponentialBackOff;
 import org.springframework.util.backoff.FixedBackOff;
 
 /**
@@ -35,18 +37,58 @@ public class KafkaTopicsConfig {
                 .build();
     }
     
+//    @Bean
+//    public DefaultErrorHandler kafkaErrorHandler(
+//            KafkaTemplate<Object, Object> kafkaTemplate) {
+//
+//        DeadLetterPublishingRecoverer recoverer =
+//                new DeadLetterPublishingRecoverer(kafkaTemplate);
+//
+//        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+//        backOff.setMaxAttempts(4);
+//        // retry 3 times with 1 second backoff
+////        return new DefaultErrorHandler(
+////                recoverer, backOff);
+//                //new FixedBackOff(1000L, 3) // retry 3 times
+////        );
+//        
+//        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, backOff);
+//
+//     // Don't retry on these — they'll never succeed
+//	     handler.addNotRetryableExceptions(
+//	         IllegalArgumentException.class,
+//	         DeserializationException.class
+//	     );
+//    }
+    
     @Bean
-    public DefaultErrorHandler kafkaErrorHandler(
-            KafkaTemplate<Object, Object> kafkaTemplate) {
+    public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
 
         DeadLetterPublishingRecoverer recoverer =
                 new DeadLetterPublishingRecoverer(kafkaTemplate);
 
-        // retry 3 times with 1 second backoff
-        return new DefaultErrorHandler(
-                recoverer,
-                new FixedBackOff(1000L, 3) // retry 3 times
+        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
+        backOff.setMaxAttempts(3);
+
+        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, backOff);
+
+        handler.addNotRetryableExceptions(
+            IllegalArgumentException.class,
+            DeserializationException.class
         );
+
+        return handler;
+    }
+    
+    // Define the dead-letter topic for failed messages
+    // This topic will receive messages that failed to process after retries
+    // You can customize the topic name and configuration as needed
+    @Bean
+    public NewTopic bookCreatedDlt() {
+        return TopicBuilder.name("book-created.DLT")
+                .partitions(1)
+                .replicas(1)
+                .build();
     }
 }
 
