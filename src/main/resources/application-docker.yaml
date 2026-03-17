@@ -5,41 +5,96 @@ spring:
 
   kafka:
     enabled: true
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: kafka:9092  # "kafka" matches the Docker Compose service name for Kafka, allowing inter-container communication
     admin:
-      fail-fast: false
+      fail-fast: false          # allow service to start even if Kafka server is temporarily unavailable (e.g., during startup)
+                                # This is important in Docker Compose where services start simultaneously
+                                # and Kafka might not be ready immediately.
     producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer            # serialize keys as strings
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer     # serialize values as JSON
       # 🔹 Retry / backoff settings
       retries: 3
+      acks: all  # wait for all replicas to acknowledge for stronger durability . 
+                 # acceptable values are 0 (fire and forget), 1 (only leader confirms), all( leader + replicas confirm)
       properties:
         # Optional: max time for metadata refresh
         metadata.max.age.ms: 30000
         retry-backoff-ms: 2000
-        enable.idempotence: true
-        max.in.flight.requests.per.connection: 1  # required with idempotence
+        enable.idempotence: true  # ensure no duplicates on retries 
+        max.in.flight.requests.per.connection: 1  # required with idempotence This controls how many messages can be sent before acknowledgment.
         spring.json.add.type.headers: false   # don't embed class name in headers
 
-    consumer:
-      group-id: book-service-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.learn.bookService.Events"
-        auto.offset.reset: earliest
-        
-eureka:
-  instance:
+
+  cloud:
+    consul:
+      host: consul          # matches Docker Compose service name
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        prefer-ip-address: true
+        register: true
+        enabled: true
+      config:
+        enabled: false      # not using Consul as config server
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # BookService fetches Auth Server public key from here to verify user tokens
+          jwk-set-uri: http://auth-server:7001/oauth2/jwks
+
+          
+# Auth Server connection details for service-to-service token fetching
+auth:
+  server:
+    token-uri: http://auth-server:7001/oauth2/token  # CLIENT_CREDENTIALS endpoint
+    client-id: book-service                           # registered in Auth Server
+    client-secret: book-secret                        # registered in Auth Server
+
+# ── Resilience4j Configuration ───────────────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      pricingService:                                                      # name used in @CircuitBreaker(name = "pricingService")
+        register-health-indicator: true                                    # shows circuit state in /actuator/health
+        sliding-window-size: 10                                            # evaluate last 10 calls to decide state
+        minimum-number-of-calls: 5                                         # need at least 5 calls before opening circuit
+        failure-rate-threshold: 50                                         # open circuit if 50% or more calls fail
+        wait-duration-in-open-state: 30s                                   # wait 30s before trying again (HALF-OPEN)
+        permitted-number-of-calls-in-half-open-state: 3                    # test with 3 calls in HALF-OPEN
+        automatic-transition-from-open-to-half-open-enabled: true          # auto retry after wait
+        sliding-window-type: COUNT_BASED                                   # count based (vs TIME_BASED)
+
+  retry:
+    instances:
+      pricingService:                                                # name used in @Retry(name = "pricingService")
+        max-attempts: 3                                              # try 3 times before giving up
+        wait-duration: 2s                                            # wait 2 seconds between retries
+        retry-exceptions:                                            # only retry on these exceptions
+          - feign.FeignException
+          - java.net.ConnectException
+        ignore-exceptions:                                           # never retry on these (client errors)
+          - feign.FeignException.BadRequest
+          - feign.FeignException.NotFound      
+   
+# ── Old Eureka config - commented out ──
+#eureka:
+#  instance:
     # Use Docker container hostname for inter-container communication
-    prefer-ip-address: true
+#    prefer-ip-address: true
     # How often this instance sends heartbeats to Eureka (default 30s)
-    lease-renewal-interval-in-seconds: 10
+#    lease-renewal-interval-in-seconds: 10
     # How long Eureka waits before removing instance without heartbeat (default 90s)
-    lease-expiration-duration-in-seconds: 30
-  client:
-    register-with-eureka: true   # Register this service
-    fetch-registry: true         # Fetch registry (needed to discover other services)
-    service-url:
+#    lease-expiration-duration-in-seconds: 30
+#  client:
+#    register-with-eureka: true   # Register this service
+#    fetch-registry: true         # Fetch registry (needed to discover other services)
+#    service-url:
       # "eureka-server" matches the Docker Compose service name
-      defaultZone: http://eureka-server:8761/eureka/
+#      defaultZone: http://eureka-server:8761/eureka/
+      

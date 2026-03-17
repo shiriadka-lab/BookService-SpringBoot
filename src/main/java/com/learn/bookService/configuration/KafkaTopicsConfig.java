@@ -25,6 +25,17 @@ import org.springframework.util.backoff.FixedBackOff;
  * successfully after retries.
  * 
  */
+/**
+ *  it's a topic provisioning class. It doesn't handle sending or receiving messages, 
+ *  it just ensures the topics exist when the app boots. There are two ways to create topics in Kafka:
+ *  1. create them manually using Kafka CLI tools or a UI like Kafka Manager
+ *  2. have your application create them automatically on startup using Spring Kafka's AdminClient,
+ *   which is what this class does.
+ *   
+ *   All the topic used in this application are defined here. 
+ *   If you add a new topic, you should add a corresponding @Bean method in this class to ensure it gets created
+ *   when the app starts.
+ */
 @Configuration
 @Profile("docker")  // only active in Docker
 public class KafkaTopicsConfig {
@@ -36,6 +47,19 @@ public class KafkaTopicsConfig {
                 .replicas(1)
                 .build();
     }
+
+    /// ******** Add more topics as needed ********
+//    @Bean  
+//    public NewTopic bookUpdatedTopic() { ... }
+//
+//    @Bean
+//    public NewTopic bookDeletedTopic() { ... }
+//
+//    @Bean
+//    public NewTopic bookCreatedDlt() { ... }
+//
+//    @Bean
+//    public NewTopic bookUpdatedDlt() { ... }
     
 //    @Bean
 //    public DefaultErrorHandler kafkaErrorHandler(
@@ -61,35 +85,6 @@ public class KafkaTopicsConfig {
 //	     );
 //    }
     
-    @Bean
-    public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
-
-        DeadLetterPublishingRecoverer recoverer =
-                new DeadLetterPublishingRecoverer(kafkaTemplate);
-
-        ExponentialBackOff backOff = new ExponentialBackOff(1000L, 2.0);
-        backOff.setMaxAttempts(3);
-
-        DefaultErrorHandler handler = new DefaultErrorHandler(recoverer, backOff);
-
-        handler.addNotRetryableExceptions(
-            IllegalArgumentException.class,
-            DeserializationException.class
-        );
-
-        return handler;
-    }
-    
-    // Define the dead-letter topic for failed messages
-    // This topic will receive messages that failed to process after retries
-    // You can customize the topic name and configuration as needed
-    @Bean
-    public NewTopic bookCreatedDlt() {
-        return TopicBuilder.name("book-created.DLT")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
 }
 
 

@@ -43,17 +43,6 @@ spring:
     user:
       name: admin
       password: secret123
-    oauth2:
-      client:
-        registration:
-          pricing-client:
-            client-id: book-service
-            client-secret: book-secret
-            authorization-grant-type: client_credentials
-            scope: internal
-          provider:
-            sas:
-              token-uri: http://auth-server:7001/oauth2/token
 
   kafka:
     enabled: false
@@ -80,17 +69,14 @@ sonar:
     password: sonar
 
 management:
+  health:
+    circuitbreakers:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info,threaddump,mappings,metrics,prometheus
+        include: "*"
   endpoint:
-    threaddump:
-      enabled: true
-    mappings:
-      enabled: true
-    prometheus:
-      enabled: true
     health:
       show-details: always
 
@@ -106,5 +92,5 @@ logging:
 ## in docker "docker run -e JWT_SECRET=very-long-random-key my-app"
 ## in linux/WSL export JWT_SECRET=very-long-random-key
 ## in powershell setx JWT_SECRET "very-long-random-key" and access it as jwt.secret=${JWT_SECRET} 
-jwt:
-  secret: veryverysecuresecretkey1234567890  # set as an environment variable
+#jwt:
+#  secret: veryverysecuresecretkey1234567890  # set as an environment variable

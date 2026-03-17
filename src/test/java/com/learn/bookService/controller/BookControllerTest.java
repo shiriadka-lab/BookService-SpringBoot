@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.learn.bookService.Events.BookEventPublisher;
 import com.learn.bookService.client.PricingClient;
-import com.learn.bookService.configuration.JwtUtil;
+//import com.learn.bookService.configuration.JwtUtil;
 import com.learn.bookService.dto.BookDTO;
 import com.learn.bookService.persistence.service.BookOperations;
 
@@ -46,8 +46,8 @@ class BookControllerTest {
     private PricingClient pricingClient;  // Mock it so URL is never needed
 
     // Provide a mock JwtUtil so any security filter depending on it won't break the test context
-    @MockBean
-    private JwtUtil jwtUtil;
+//    @MockBean
+//    private JwtUtil jwtUtil;
 
     @Test
     void testFindAll() throws Exception {
