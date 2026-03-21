@@ -24,6 +24,10 @@ spring:
         enable.idempotence: true  # ensure no duplicates on retries 
         max.in.flight.requests.per.connection: 1  # required with idempotence This controls how many messages can be sent before acknowledgment.
         spring.json.add.type.headers: false   # don't embed class name in headers
+    template:
+      observation-enabled: true    # enables tracing on KafkaTemplate (producer)
+    listener:
+      observation-enabled: true    # enables tracing on @KafkaListener (consumer)
 
 
   cloud:
@@ -48,6 +52,14 @@ spring:
           # BookService fetches Auth Server public key from here to verify user tokens
           jwk-set-uri: http://auth-server:7001/oauth2/jwks
 
+  cache:
+    type: redis
+    #redis:     # for default RedisCacheManager settings, you can omit this block entirely
+    #  time-to-live: 300000  # 5 minutes in milliseconds
+  data:
+    redis:
+      host: redis
+      port: 6379
           
 # Auth Server connection details for service-to-service token fetching
 auth:
@@ -81,6 +93,22 @@ resilience4j:
         ignore-exceptions:                                           # never retry on these (client errors)
           - feign.FeignException.BadRequest
           - feign.FeignException.NotFound      
+
+# --Tempo Configuration. Tempo uses zipkin properties in spring boot.
+management:
+  tracing:
+    sampling:
+      probability: 1.0          # trace 100% of requests
+                                # use 0.1 (10%) in production to reduce overhead
+  zipkin:
+    tracing:
+      endpoint: http://tempo:9411/api/v2/spans  # Tempo server URL
+ 
+logging:
+  pattern:
+    # Adds trace ID and span ID to every log line automatically
+    # Format: [service-name, traceId, spanId]
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
    
 # ── Old Eureka config - commented out ──
 #eureka:

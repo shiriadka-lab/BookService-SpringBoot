@@ -50,6 +50,9 @@ spring:
       admin:
       fail-fast: false
 
+  cache:
+    type: none  # ← disables caching when running locally
+
 pricing:
   service:
     url: http://localhost:8082
@@ -79,6 +82,9 @@ management:
   endpoint:
     health:
       show-details: always
+  metrics:          #for prometheus to show the application name 
+    tags:
+      application: ${spring.application.name}
 
 logging:
   file:
