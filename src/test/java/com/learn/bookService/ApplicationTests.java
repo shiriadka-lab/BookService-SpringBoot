@@ -54,7 +54,9 @@ Simulates real application startup
 	    "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:9999",
 	    "auth.server.token-uri=http://localhost:9999/oauth2/token",
 	    "auth.server.client-id=test-client",
-	    "auth.server.client-secret=test-secret"
+	    "auth.server.client-secret=test-secret",
+	    "management.tracing.sampling.probability=0.0",
+	    "management.zipkin.tracing.endpoint=http://localhost:9411/api/v2/spans"
 	})
 class ApplicationTests{// extends BookServiceApplicationTests {
 

@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.learn.bookService.Events.BookEventPublisher;
+import com.learn.bookService.configuration.CacheConstants;
 import com.learn.bookService.dto.BookDTO;
 import com.learn.bookService.dto.BookPatchDTO;
 import com.learn.bookService.exception.BookAlreadyExistsException;
@@ -37,8 +40,11 @@ public class BookService implements BookOperations {
     }
     
     // CREATE / UPDATE
+    //  Evict cache on create
+    @CacheEvict(value = CacheConstants.BOOKS_CACHE, allEntries = true)
     @Timed(value = "books.create.time", description = "Time to create book", extraTags = {"service", "book-service"})
     public BookDTO create(BookDTO bookDto) {
+    	logger.info("Cache EVICT — create book {}", bookDto);
         Book book = new Book();
         book.setAuthor(bookDto.getAuthor());
         book.setPrice(bookDto.getPrice());
@@ -59,10 +65,14 @@ public class BookService implements BookOperations {
         return toResponseDTO(saved);
     }
     
+    
+    // Evict cache on update
+    @CacheEvict(value = CacheConstants.BOOKS_CACHE, allEntries = true)
     @Timed(value = "books.update.time", description = "Time taken to update a book", extraTags = {"service", "book-service"})
     @Override
     public BookDTO update(Long id, BookDTO dto) {
 
+    	logger.info("Cache EVICT — Update book {}", id);
         Book existingBook = bookRepository.findById(id)
             .orElseThrow(() ->
                 new BookNotFoundException("NO BOOK FOUND WITH ID = " + id));
@@ -86,10 +96,14 @@ public class BookService implements BookOperations {
         return  toResponseDTO(bookRepository.save(existingBook));
     }
     
+    
+    //  Evict cache on patch
+    @CacheEvict(value = CacheConstants.BOOKS_CACHE, allEntries = true)
     @Timed(value = "books.update.time", description = "Time taken to update a book", extraTags = {"service", "book-service"})
     @Override
     public BookDTO updatePatch(Long id, BookPatchDTO dto) {
 
+    	logger.info("Cache EVICT — Update book {}", id);
         Book existingBook = bookRepository.findById(id)
             .orElseThrow(() ->
                 new BookNotFoundException("NO BOOK FOUND WITH ID = " + id));
@@ -107,22 +121,29 @@ public class BookService implements BookOperations {
         return toResponseDTO(bookRepository.save(existingBook));
     }
     
+    // Cache individual book by ID
+    @Cacheable(value = CacheConstants.BOOKS_CACHE, key = "#id")
     // READ by ID
     @Timed(value = "books.search.time", description = "Time taken to search a book", extraTags = {"service", "book-service"})
     @Override
-    public BookDTO findById(Long id) {    
+    public BookDTO findById(Long id) {
+        logger.info("Cache MISS — fetching book {} from DB", id);
         BookDTO book = toResponseDTO(bookRepository
                 .findById(id)
                 .orElseThrow(() -> new BookNotFoundException("Book not found")));
         return book;
     }
 
+ // Cache all books
+    @Cacheable(value = CacheConstants.BOOKS_CACHE, key = "'all'")
     // READ all and sort by title
     @Timed(value = "books.search.all.time", description = "Time taken to search all books", extraTags = {"service", "book-service"})
     @Override
-    public Iterable<Book> findAll() {
-        //return bookRepository.findAll(PageRequest.of(0, 5, Sort.by("title")));
-        return bookRepository.findAll();
+    public List<BookDTO> findAll() {
+        return bookRepository.findAll()
+                .stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
     // COUNT
@@ -131,8 +152,11 @@ public class BookService implements BookOperations {
     }
 
     // DELETE
+    // Evict cache on delete
+    @CacheEvict(value = CacheConstants.BOOKS_CACHE, allEntries = true)
     @Override
     public void deleteById(Long id) {
+    	logger.info("Cache EVICT — Delete book {}", id);
         Book book = bookRepository.findById(id)
                 .orElseThrow(BookNotFoundException::new);
 

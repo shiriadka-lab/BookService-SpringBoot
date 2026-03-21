@@ -1,5 +1,6 @@
 package com.learn.bookService.dto;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -15,8 +16,10 @@ import jakarta.validation.constraints.Positive;
 
 // NOTE: Entities talk to the database
 //       DTOs talk to the outside world
-public class BookDTO {
+public class BookDTO implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	private Long id;
 
 	@NotBlank(message = "Author is required")

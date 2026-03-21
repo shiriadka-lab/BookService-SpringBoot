@@ -3,6 +3,7 @@ package com.learn.bookService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 //import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 // Since Spring Cloud 2022.x and above, services auto-register with Eureka just by having the eureka-client dependency on the classpath. No annotation needed.
 //@EnableEurekaClient // ← Enable Eureka client functionality
 @EnableFeignClients          // ← Enable Feign clients in the specified package
+@EnableCaching  // ← Enable Spring's annotation-driven cache management capability
 public class Application {
 
 	public static void main(String[] args) {

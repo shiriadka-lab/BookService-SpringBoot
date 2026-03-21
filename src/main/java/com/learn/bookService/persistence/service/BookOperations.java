@@ -13,6 +13,6 @@ public interface BookOperations {
     BookDTO update(Long id, BookDTO dto);
     BookDTO updatePatch(Long id, BookPatchDTO dto);
     void deleteById(Long id);
-    Iterable<Book> findAll();
+    List<BookDTO> findAll();
     
 }
